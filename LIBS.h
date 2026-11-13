@@ -1,0 +1,21 @@
+#pragma once
+#include <fstream>
+#include <cstring>
+#include <iostream>
+#include <cstdio>
+#include <cwchar>
+#include <cstdarg>
+#include <ctime>
+#include <cstdint>
+#include <string>
+
+#include "ERRORS.h"
+#include "IN.h"
+#include "PARM.h"
+#include "LOG.h"
+#include "FST.h"
+#include "LEXEMS.h"
+#include "IDENTIFICATORS.h"
+#include "LEXER.h"
+#include "GRB.h"
+#include "MFST.h"

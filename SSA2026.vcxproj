@@ -139,10 +139,38 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ERRORS.cpp" />
+    <ClCompile Include="FST.cpp" />
+    <ClCompile Include="GRB.cpp" />
+    <ClCompile Include="IDENTIFICATORS.cpp" />
+    <ClCompile Include="IN.cpp" />
+    <ClCompile Include="LEXEMS.cpp" />
+    <ClCompile Include="LEXER.cpp" />
+    <ClCompile Include="LOG.cpp" />
+    <ClCompile Include="MFST.cpp" />
+    <ClCompile Include="PARM.cpp" />
     <ClCompile Include="SSA2026.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="code.ssa" />
+    <ClInclude Include="ERRORS.h" />
+    <ClInclude Include="FST.h" />
+    <ClInclude Include="GRB.h" />
+    <ClInclude Include="IDENTIFICATORS.h" />
+    <ClInclude Include="IN.h" />
+    <ClInclude Include="LEXEMS.h" />
+    <ClInclude Include="LEXER.h" />
+    <ClInclude Include="LIBS.h" />
+    <ClInclude Include="LOG.h" />
+    <ClInclude Include="MFST.h" />
+    <ClInclude Include="PARM.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Debug\code.ssa" />
+    <None Include="..\Debug\code.ssa.out" />
+    <None Include="..\Debug\compile.bat" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\Debug\code.ssa.log" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
