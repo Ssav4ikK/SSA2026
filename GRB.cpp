@@ -219,6 +219,7 @@ namespace GRB
 		static Rule::Chain Eps;
 
 		// TYPE
+
 		static Rule::Chain Type_c1(1, TS(LEX_INT8));
 		static Rule::Chain Type_c2(1, TS(LEX_INT16));
 		static Rule::Chain Type_c3(1, TS(LEX_INT32));
@@ -230,9 +231,7 @@ namespace GRB
 		static Rule::Chain Type_c9(1, TS(LEX_SYMBOL));
 		static Rule::Chain Type_c10(1, TS(LEX_NUMBER));
 		static Rule::Chain Type_c11(1, TS(LEX_HELP));
-		static Rule ruleType(NS("Type"), GRB_ERROR_SERIES + 10, 11,
-			&Type_c1, &Type_c2, &Type_c3, &Type_c4, &Type_c5, &Type_c6,
-			&Type_c7, &Type_c8, &Type_c9, &Type_c10, &Type_c11);
+		static Rule ruleType(NS("Type"), GRB_ERROR_SERIES + 10, 11, &Type_c1, &Type_c2, &Type_c3, &Type_c4, &Type_c5, &Type_c6, &Type_c7, &Type_c8, &Type_c9, &Type_c10, &Type_c11);
 
 		// ARRAY TYPE
 		static Rule::Chain Array_c1(2, TS(LEX_ARRAY), NS("Type"));
@@ -269,8 +268,8 @@ namespace GRB
 
 		static Rule::Chain Stmt_c1(1, NS("Decl"));
 		static Rule::Chain Stmt_c2(1, NS("Asgn"));
-		static Rule::Chain Stmt_c3(5, TS(LEX_PRINT), TS(LEX_LEFT_BRACKET), NS("Expr"), TS(LEX_RIGHT_BRACKET), TS(LEX_SEMICOLON));
-		static Rule::Chain Stmt_c4(5, TS(LEX_PRINTF), TS(LEX_LEFT_BRACKET), NS("Expr"), TS(LEX_RIGHT_BRACKET), TS(LEX_SEMICOLON));
+		static Rule::Chain Stmt_c3(5, TS(LEX_PRINT), TS(LEX_LEFT_BRACKET), NS("PArg"), TS(LEX_RIGHT_BRACKET), TS(LEX_SEMICOLON));
+		static Rule::Chain Stmt_c4(5, TS(LEX_PRINTF), TS(LEX_LEFT_BRACKET), NS("PArg"), TS(LEX_RIGHT_BRACKET), TS(LEX_SEMICOLON));
 		static Rule::Chain Stmt_c5(6, TS(LEX_IDENTIFICATOR), TS(LEX_EQUAL), TS(LEX_INPUT), TS(LEX_LEFT_BRACKET), TS(LEX_RIGHT_BRACKET), TS(LEX_SEMICOLON));
 		static Rule::Chain Stmt_c6(7, NS("Type"), TS(LEX_IDENTIFICATOR), TS(LEX_EQUAL), TS(LEX_INPUT), TS(LEX_LEFT_BRACKET), TS(LEX_RIGHT_BRACKET), TS(LEX_SEMICOLON));
 		static Rule::Chain Stmt_c7(3, TS(LEX_BACK), NS("Expr"), TS(LEX_SEMICOLON));
@@ -278,10 +277,14 @@ namespace GRB
 		static Rule::Chain Stmt_c9(1, NS("Cond"));
 		static Rule::Chain Stmt_c10(1, NS("Cycl"));
 		static Rule::Chain Stmt_c11(2, NS("Expr"), TS(LEX_SEMICOLON));
-		static Rule ruleStmt(NS("Stmt"), GRB_ERROR_SERIES + 100, 11,
-			&Stmt_c1, &Stmt_c2, &Stmt_c3, &Stmt_c4, &Stmt_c5, &Stmt_c6, &Stmt_c7, &Stmt_c8, &Stmt_c9, &Stmt_c10, &Stmt_c11);
+		static Rule::Chain Stmt_c12(2, NS("Step"), TS(LEX_SEMICOLON));
+		static Rule::Chain Stmt_c13(4, TS(LEX_IDENTIFICATOR), TS(LEX_EQUAL), NS("Step"), TS(LEX_SEMICOLON));
+		static Rule::Chain Stmt_c14(5, NS("Type"), TS(LEX_IDENTIFICATOR), TS(LEX_EQUAL), NS("Step"), TS(LEX_SEMICOLON));
+		
+		static Rule ruleStmt(NS("Stmt"), GRB_ERROR_SERIES + 100, 14,&Stmt_c1, &Stmt_c2, &Stmt_c3, &Stmt_c4, &Stmt_c5, &Stmt_c6, &Stmt_c7, &Stmt_c8, &Stmt_c9, &Stmt_c10, &Stmt_c11, &Stmt_c12, &Stmt_c13, &Stmt_c14);
 
 		// DECLARATIONS
+
 		static Rule::Chain Decl_c1(5, NS("Type"), TS(LEX_IDENTIFICATOR), TS(LEX_EQUAL), NS("Expr"), TS(LEX_SEMICOLON));
 		static Rule::Chain Decl_c2(3, NS("Type"), TS(LEX_IDENTIFICATOR), TS(LEX_SEMICOLON));
 		static Rule::Chain Decl_c3(8, NS("ArrT"), TS(LEX_IDENTIFICATOR), TS(LEX_LEFT_SQUARE_BRACKET), NS("Expr"), TS(LEX_RIGHT_SQUARE_BRACKET), TS(LEX_EQUAL), NS("AVal"), TS(LEX_SEMICOLON));
@@ -291,7 +294,7 @@ namespace GRB
 		static Rule::Chain Decl_c7(10,NS("ArrT"), TS(LEX_IDENTIFICATOR), TS(LEX_LEFT_SQUARE_BRACKET), NS("Expr"), TS(LEX_RIGHT_SQUARE_BRACKET), TS(LEX_EQUAL), TS(LEX_LEFT_FIGURE_BRACKET), NS("AVal"),TS(LEX_RIGHT_FIGURE_BRACKET),TS(LEX_SEMICOLON));
 		static Rule ruleDecl(NS("Decl"), GRB_ERROR_SERIES + 130, 7, &Decl_c1, &Decl_c2, &Decl_c3, &Decl_c4, &Decl_c5, &Decl_c6, &Decl_c7);
 
-		// ASGN
+		// ASSIGNMENT
 
 		static Rule::Chain Asgn_c1(4, TS(LEX_IDENTIFICATOR), TS(LEX_EQUAL), NS("Expr"), TS(LEX_SEMICOLON));
 		static Rule::Chain Asgn_c2(4, TS(LEX_IDENTIFICATOR), TS(LEX_EQUAL), NS("AVal"), TS(LEX_SEMICOLON));
@@ -307,6 +310,7 @@ namespace GRB
 		static Rule ruleAsgn(NS("Asgn"), GRB_ERROR_SERIES + 131, 11, &Asgn_c1, &Asgn_c2, &Asgn_c3, &Asgn_c4, &Asgn_c5, &Asgn_c6, &Asgn_c7, &Asgn_c8, &Asgn_c9, &Asgn_c10, &Asgn_c11);
 
 		// STEP/ FOR
+
 		static Rule::Chain Step_c1(3, TS(LEX_IDENTIFICATOR), TS(LEX_EQUAL), NS("Expr"));
 		static Rule::Chain Step_c2(1, NS("Expr"));
 		static Rule::Chain Step_c3(3, TS(LEX_IDENTIFICATOR), TS(LEX_PLUS), TS(LEX_PLUS));
@@ -340,15 +344,17 @@ namespace GRB
 		static Rule ruleCycl(NS("Cycl"), GRB_ERROR_SERIES + 7, 4, &Cycl_c1, &Cycl_c2, &Cycl_c3, &Cycl_c4);
 
 		// EXPRESSIONS
+
 		static Rule::Chain Expr_c1(2, NS("Opnd"), NS("Oper"));
 		static Rule ruleExpr(NS("Expr"), GRB_ERROR_SERIES + 5, 1, &Expr_c1);
 
 
+		// OPERAND
 
 		static Rule::Chain Opnd_c1(4, TS(LEX_IDENTIFICATOR), TS(LEX_LEFT_BRACKET), NS("FCal"), TS(LEX_RIGHT_BRACKET));
 		static Rule::Chain Opnd_c2(1, TS(LEX_IDENTIFICATOR));
 		static Rule::Chain Opnd_c3(1, TS(LEX_LITERAL));
-		static Rule::Chain Opnd_c4(1, TS(LEX_FORMATED_STRING));
+		static Rule::Chain Opnd_c4(1, TS(LEX_STRING_LITERAL));
 		static Rule::Chain Opnd_c5(3, TS(LEX_LEFT_BRACKET), NS("Expr"), TS(LEX_RIGHT_BRACKET));
 		static Rule::Chain Opnd_c6(3, TS(LEX_INPUT),TS(LEX_LEFT_BRACKET),TS(LEX_RIGHT_BRACKET));
 		static Rule ruleOpnd(NS("Opnd"), GRB_ERROR_SERIES + 150, 6, &Opnd_c1, &Opnd_c2, &Opnd_c3, &Opnd_c4, &Opnd_c5, &Opnd_c6);
@@ -367,9 +373,7 @@ namespace GRB
 		static Rule::Chain Oper_c9(2, TS(LEX_LESSEQ), NS("Expr"));
 		static Rule::Chain Oper_c10(2, TS(LEX_GREATEREQ), NS("Expr"));
 		static Rule::Chain Oper_c11(2, TS(LEX_CUBE), NS("Oper"));
-		static Rule ruleOper(NS("Oper"), GRB_ERROR_SERIES + 190, 12,
-			&Oper_c1, &Oper_c2, &Oper_c3, &Oper_c4, &Oper_c5, &Oper_c6,
-			&Oper_c7, &Oper_c8, &Oper_c9, &Oper_c10, &Oper_c11, &Eps);
+		static Rule ruleOper(NS("Oper"), GRB_ERROR_SERIES + 190, 12, &Oper_c1, &Oper_c2, &Oper_c3, &Oper_c4, &Oper_c5, &Oper_c6,&Oper_c7, &Oper_c8, &Oper_c9, &Oper_c10, &Oper_c11, &Eps);
 
 		// CALL
 		static Rule::Chain FCal_c1(3, NS("Expr"), TS(LEX_COMMA), NS("FCal"));
@@ -383,12 +387,17 @@ namespace GRB
 		static Rule::Chain AVal_c4(1, TS(LEX_IDENTIFICATOR));
 		static Rule ruleAVal(NS("AVal"), GRB_ERROR_SERIES + 180, 4, &AVal_c1, &AVal_c2, &AVal_c3, &AVal_c4);
 
-		return Greibach(21, NS("Strt"), TS("#   "),
+		// PRINT ARGUMENT
+		static Rule::Chain PArg_c1(1, NS("Expr"));
+		static Rule::Chain PArg_c2(1, TS(LEX_FORMATED_STRING));
+		static Rule rulePArg(NS("PArg"), GRB_ERROR_SERIES + 150, 2, &PArg_c1, &PArg_c2);
+
+		return Greibach(22, NS("Strt"), TS("#   "),
 			&ruleStrt, &ruleProc, &ruleBlck, &ruleBody, &ruleStmt,
 			&ruleDecl, &ruleAsgn, &ruleStep, &ruleForP, &ruleType,
 			&ruleArray, &rulePrms, &ruleCond, &ruleElif, &ruleCase,
 			&ruleCycl, &ruleExpr, &ruleOpnd, &ruleOper, &ruleFCal,
-			&ruleAVal
+			&ruleAVal, &rulePArg
 		);
 	}
 

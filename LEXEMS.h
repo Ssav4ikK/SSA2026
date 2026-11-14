@@ -92,6 +92,7 @@
 //OTHER
 
 #define LEX_LITERAL			"lter"
+#define LEX_STRING_LITERAL		"strl"
 #define LEX_IDENTIFICATOR	"idfr"
 #define LEX_MAIN			"main"
 #define LEX_SSA2026			"2026"

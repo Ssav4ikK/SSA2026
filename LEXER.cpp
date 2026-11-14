@@ -410,7 +410,7 @@ namespace LEXER {
 
             else if (FST::isStringLiteral(local))
             {
-                COPY(LEX_LITERAL);
+                COPY(LEX_STRING_LITERAL);
                 IDTABLE::Entry id_table_entry;
                 id_table_entry.index_first_string_LE = lexer.lextable.current_size;
                 strcpy_s(id_table_entry.id, ID_MAX_CHARS, "L");
@@ -702,7 +702,7 @@ namespace LEXER {
     void PrintLexTable(LOG::Log log, LEXTABLE::LexTable lextable)
     {
         if (!log.stream) return;
-        *(log.stream) << "\r\nТаблица лексем\r\n";
+        *(log.stream) << "\r\nпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ\r\n";
 
         int current_line = -1;
         for (int i = 0; i < lextable.current_size; i++)
@@ -769,14 +769,14 @@ namespace LEXER {
             }
         }
 
-        log_stream << "\r\nТаблица идентификаторов\r\n";
+        log_stream << "\r\nпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ\r\n";
 
         PrintTableCell(log_stream, "N", 4);
         PrintTableCell(log_stream, "ID", id_width);
-        PrintTableCell(log_stream, "Тип Данных", 14);
-        PrintTableCell(log_stream, "Тип ID", 14);
-        PrintTableCell(log_stream, "Первое вхождение", 17);
-        log_stream << "Значение\r\n";
+        PrintTableCell(log_stream, "пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ", 14);
+        PrintTableCell(log_stream, "пїЅпїЅпїЅ ID", 14);
+        PrintTableCell(log_stream, "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ", 17);
+        log_stream << "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ\r\n";
 
         for (int i = 0; i < idtable.current_size; i++)
         {
@@ -807,10 +807,10 @@ namespace LEXER {
 
             switch (id_table_entry.id_type)
             {
-            case IDTABLE::V: PrintTableCell(log_stream, "Переменная", 14); break;
-            case IDTABLE::F: PrintTableCell(log_stream, "Функция", 14);    break;
-            case IDTABLE::P: PrintTableCell(log_stream, "Параметр", 14);   break;
-            case IDTABLE::L: PrintTableCell(log_stream, "Литерал", 14);    break;
+            case IDTABLE::V: PrintTableCell(log_stream, "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ", 14); break;
+            case IDTABLE::F: PrintTableCell(log_stream, "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ", 14);    break;
+            case IDTABLE::P: PrintTableCell(log_stream, "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ", 14);   break;
+            case IDTABLE::L: PrintTableCell(log_stream, "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ", 14);    break;
             }
 
             char first_entry[16];
