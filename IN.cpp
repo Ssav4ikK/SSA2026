@@ -15,7 +15,7 @@ void table_initialization()
 	}
 }
 
-namespace IN 
+namespace IN
 {
 	In getIn(wchar_t InFile[]) {
 		table_initialization();
@@ -41,36 +41,46 @@ namespace IN
 		}
 
 		char symbol;
-		char quote_symbol = '\0';				// внутри строкового литерала комментарии не начинаются
-		int line = 0;
-		int col = 0;
+		char quote_symbol = '\0';	
+		bool is_escaped = false;	
+		int line = 1;					
+		int col = 1;
 		int pos = 0;
 
 		while (file.get(symbol)) {
 			unsigned char usymbol = symbol;
 
-			// комментарий "//" до конца строки в текст программы не попадает
 			if (quote_symbol == '\0' && symbol == '/' && file.peek() == '/') {
-				file.get(symbol);						// второй '/'
+				file.get(symbol);						
 				in.ignore += 2;
 				while (file.get(symbol) && symbol != '\n') {
 					in.ignore++;
 				}
-				if (symbol == '\n' && pos < IN_MAX_LENGTH_TEXT - 1) {
+				if (symbol == '\n') {
+					if (pos >= IN_MAX_LENGTH_TEXT - 1) {
+						delete[] in.text;
+						throw ERROR_THROW(116);
+					}
 					in.text[pos++] = '\n';
 					in.size++;
 					in.lines++;
 					line++;
-					col = 0;
+					col = 1;
 				}
 				continue;
 			}
 
-			if (quote_symbol == '\0' && (symbol == '"' || symbol == '\'')) {
-				quote_symbol = symbol;
+
+			if (quote_symbol != '\0') {
+				if (is_escaped)
+					is_escaped = false;
+				else if (symbol == '\\')
+					is_escaped = true;
+				else if (symbol == quote_symbol)
+					quote_symbol = '\0';
 			}
-			else if (symbol == quote_symbol) {
-				quote_symbol = '\0';
+			else if (symbol == '"' || symbol == '\'') {
+				quote_symbol = symbol;
 			}
 
 			int rule = in.code[usymbol];
@@ -87,35 +97,33 @@ namespace IN
 			}
 			else
 			{
-				char out_symbol;
-				if (rule == In::T)
-				{
-					out_symbol = symbol;
-				}
-				else
-				{
-					out_symbol = (char)rule;
-				}
+				char out_symbol = (rule == In::T) ? symbol : (char)rule;
 
-
-				if (pos < IN_MAX_LENGTH_TEXT - 1)
+				if (pos >= IN_MAX_LENGTH_TEXT - 1)
 				{
-					in.text[pos++] = out_symbol;
-					in.size++;
+					delete[] in.text;
+					throw ERROR_THROW(116);
 				}
+				in.text[pos++] = out_symbol;
+				in.size++;
 
 				col++;
 				if (usymbol == '\n') {
 					in.lines++;
 					line++;
-					col = 0;
+					col = 1;
 				}
 			}
 		}
 		in.text[pos] = '\0';
 		file.close();
 
-		// строка без завершающего "\n" - тоже строка
+		if (quote_symbol != '\0') {
+			delete[] in.text;
+			throw ERROR_THROW_PLACE(115, line, col);
+		}
+
+
 		if (in.size > 0 && in.text[pos - 1] != '\n') {
 			in.lines++;
 		}

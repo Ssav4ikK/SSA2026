@@ -1,6 +1,6 @@
 #pragma once
 
-#define LEXEMA_FIXSIZE							5		// 4 символа лексемы + завершающий '\0'
+#define LEXEMA_FIXSIZE							5		
 #define LEXTABLE_MAX_COUNT_OF_LINES				4096
 #define LEXTABLE_IDENTIFICATORTABLE_NULLIDX		0xffffffff
 
@@ -75,6 +75,13 @@
 #define LEX_DIRSLASH	"/   "
 #define LEX_EQUAL		"=   "
 #define LEX_EXCLAMATORY "!   "
+#define LEX_CUBE		"^2  "
+#define LEX_LESS		"<   "
+#define LEX_GREATER		">   "
+#define LEX_LESSEQ		"<=  "
+#define LEX_GREATEREQ   ">=  "
+#define LEX_EQUAL_EQUAL "==  "
+#define LEX_NOTEQUAL	"!=  "
 
 //BASE FUNC
 
@@ -88,7 +95,7 @@
 #define LEX_IDENTIFICATOR	"idfr"
 #define LEX_MAIN			"main"
 #define LEX_SSA2026			"2026"
-#define LEX_END				"end"
+#define LEX_END				"end "
 #define LEX_START			"strt"
 
 //CUSTOM
@@ -97,7 +104,7 @@
 #define LEX_HELP			"help"
 #define LEX_ARRAY			"arr "
 
-namespace LEXTABLE 
+namespace LEXTABLE
 {
 	struct Entry
 	{
@@ -118,6 +125,3 @@ namespace LEXTABLE
 	Entry GetEntry(LexTable& lextable, int str_num);
 	void Delete(LexTable& lextable);
 }
-
-
-

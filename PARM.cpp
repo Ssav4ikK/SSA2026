@@ -1,8 +1,14 @@
 #include "LIBS.h"
 
-
 namespace PARMS
 {
+
+	static bool hasPrefix(const wchar_t* arg, const wchar_t* prefix)
+	{
+		size_t n = wcslen(prefix);
+		return wcsncmp(arg, prefix, n) == 0 && (arg[n] == L'\0' || arg[n] == L':');
+	}
+
 	Parm getparm(int argc, wchar_t* argv[])
 	{
 		Parm parm = { 0 };
@@ -15,35 +21,25 @@ namespace PARMS
 				throw ERROR_THROW(104);
 			}
 
-			wchar_t* ptr_in_parm = wcsstr(argv[i], PARM_IN);																																					//поиск подстроки параметриа in
-			wchar_t* ptr_out_parm = wcsstr(argv[i], PARM_OUT);																																					//поиск подстроки параметра out
-			wchar_t* ptr_log_parm = wcsstr(argv[i], PARM_LOG);																																					//поиск подстроки параметра log
-
-			if (ptr_in_parm == argv[i]) {
+			if (hasPrefix(argv[i], PARM_IN)) {
 				wchar_t* value = argv[i] + wcslen(PARM_IN);
-				if (*value == L':') {
-					value++;
-				}
+				if (*value == L':') value++;
 				wcscpy_s(parm.in, value);
 				in_parm_found = true;
 			}
-			else if (ptr_out_parm == argv[i]) {
+			else if (hasPrefix(argv[i], PARM_OUT)) {
 				wchar_t* value = argv[i] + wcslen(PARM_OUT);
-				if (*value == L':') {
-					value++;
-				}
+				if (*value == L':') value++;
 				wcscpy_s(parm.out, value);
 			}
-			else if (ptr_log_parm == argv[i]) {
+			else if (hasPrefix(argv[i], PARM_LOG)) {
 				wchar_t* value = argv[i] + wcslen(PARM_LOG);
-				if (*value == L':') {
-					value++;
-				}
+				if (*value == L':') value++;
 				wcscpy_s(parm.log, value);
 			}
 		}
 
-		if (!in_parm_found) {
+		if (!in_parm_found || wcslen(parm.in) == 0) {
 			throw ERROR_THROW(100);
 		}
 

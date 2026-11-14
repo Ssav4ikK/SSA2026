@@ -4,13 +4,6 @@
 #define COMPARE(lex)    strcmp(words, lex) == 0
 
 namespace LEXER {
-
-
-	
-
-
-
-
     Lexer Analyze(IN::In in) {
         Lexer lexer;
         lexer.lextable = LEXTABLE::Create(LEXTABLE_MAX_COUNT_OF_LINES);
@@ -35,7 +28,7 @@ namespace LEXER {
             memcpy(local, buffer, length);
             local[length] = '\0';
 
-            LEXTABLE::Entry lextable_entry;
+            LEXTABLE::Entry lextable_entry = {};
             lextable_entry.str_number = line;
             lextable_entry.indexIT = LEXTABLE_IDENTIFICATORTABLE_NULLIDX;
             strncpy_s(lextable_entry.lexema, LEXEMA_FIXSIZE, local, _TRUNCATE);
@@ -109,6 +102,13 @@ namespace LEXER {
             }
             else if (COMPARE(LEX_PROCEDURE)) {
                 COPY(LEX_PROCEDURE);
+                if (lexer.lextable.current_size > 0) {
+                    LEXTABLE::Entry& prev = lexer.lextable.table[lexer.lextable.current_size - 1];
+                    if (strncmp(prev.lexema, LEX_IDENTIFICATOR, 4) == 0 && prev.indexIT >= 0) {
+                        lexer.idtable.table[prev.indexIT].id_type = IDTABLE::F;
+                        strncpy_s(current_scope, ID_MAX_CHARS, lexer.idtable.table[prev.indexIT].id, _TRUNCATE);
+                    }
+                }
                 is_func = true;
             }
             else if (COMPARE(LEX_ARRAY)) {
@@ -319,7 +319,7 @@ namespace LEXER {
                 IDTABLE::Add(lexer.idtable, id_table_entry);
                 lextable_entry.indexIT = lexer.idtable.current_size - 1;
             }
-            
+
 
             //NUMBER
 
@@ -346,7 +346,7 @@ namespace LEXER {
                     id_table_entry.id_data_type = IDTABLE::INT32;
                     id_table_entry.id_value.var_int32 = (int32_t)val;
                 }
-                else if(val >= LONG_MIN &&  val <= LONG_MAX){
+                else if (val >= LONG_MIN && val <= LONG_MAX) {
                     id_table_entry.id_data_type = IDTABLE::INT64;
                     id_table_entry.id_value.var_int64 = (int64_t)val;
                 }
@@ -361,7 +361,7 @@ namespace LEXER {
 
                 IDTABLE::Add(lexer.idtable, id_table_entry);
                 lextable_entry.indexIT = lexer.idtable.current_size - 1;
-                }
+            }
 
 
             //BOOLEAN
@@ -428,7 +428,7 @@ namespace LEXER {
                 lextable_entry.indexIT = lexer.idtable.current_size - 1;
             }
 
-           
+
 
             //FORMATED STRING
 
@@ -440,7 +440,7 @@ namespace LEXER {
                 strcpy_s(id_table_entry.id, ID_MAX_CHARS, "L");
                 _itoa_s(lexer.idtable.current_size, id_table_entry.id + 1, ID_MAX_CHARS - 1, 10);
                 id_table_entry.id_type = IDTABLE::L;
-                id_table_entry.id_data_type = IDTABLE::FSTRING; 
+                id_table_entry.id_data_type = IDTABLE::FSTRING;
 
                 std::string string_value = local;
                 if (string_value.size() >= 2 && string_value.front() == '"' && string_value.back() == '"')
@@ -449,7 +449,7 @@ namespace LEXER {
 
                 IDTABLE::Add(lexer.idtable, id_table_entry);
                 lextable_entry.indexIT = lexer.idtable.current_size - 1;
-                }
+            }
 
 
             //HELP
@@ -523,7 +523,7 @@ namespace LEXER {
 
             else if (FST::isIdentifier(local))
             {
-                COPY(LEX_IDENTIFICATOR); 
+                COPY(LEX_IDENTIFICATOR);
                 IDTABLE::Entry id_table_entry;
                 id_table_entry.index_first_string_LE = lexer.lextable.current_size;
 
@@ -531,117 +531,174 @@ namespace LEXER {
 
                 id_table_entry.id_data_type = current_type;
 
-                if (is_func) {
-                    id_table_entry.id_type = IDTABLE::F; 
-                    strncpy_s(current_scope, ID_MAX_CHARS, local, _TRUNCATE); 
-                    is_func = false;                      
-                }
-                else {
-                    id_table_entry.id_type = IDTABLE::V;
-                }
+                id_table_entry.id_type = is_param ? IDTABLE::P : IDTABLE::V;
 
                 IDTABLE::Add(lexer.idtable, id_table_entry);
                 lextable_entry.indexIT = lexer.idtable.current_size - 1;
-                }
+            }
 
+            else {
+                throw ERROR_THROW_PLACE(113, line, col);
+            }
             LEXTABLE::Add(lexer.lextable, lextable_entry);
             };
 
 
-            char quote_symbol = '\0';
-            bool is_escaped = false;
+        char quote_symbol = '\0';
+        bool is_escaped = false;
 
-            for (int i = 0; i <= in.size; i++)
+        for (int i = 0; i <= in.size; i++)
+        {
+            char c = in.text[i];
+
+            if (quote_symbol != '\0')
             {
-                char c = in.text[i];
+                if (buf_idx >= (int)sizeof(buffer) - 1)
+                    throw ERROR_THROW_PLACE(114, line, col);
 
-                if (quote_symbol != '\0')
-                {
-                    if (buf_idx >= (int)sizeof(buffer) - 1)
-                        throw ERROR_THROW_PLACE(111, line, col);
+                buffer[buf_idx++] = c;
+                if (is_escaped)
+                    is_escaped = false;
+                else if (c == '\\')
+                    is_escaped = true;
+                else if (c == quote_symbol)
+                    quote_symbol = '\0';
 
-                    buffer[buf_idx++] = c;
-                    if (is_escaped)
-                        is_escaped = false;
-                    else if (c == '\\')
-                        is_escaped = true;
-                    else if (c == quote_symbol)
-                        quote_symbol = '\0';
-
-                    col++;
-                    continue;
-                }
-
-                if (c == '\n')
-                {
-                    line++;
-                    col = 1;
-                    continue;
-                }
-
-                if (c == '"' || c == '\'')
-                {
-                    if (buf_idx >= (int)sizeof(buffer) - 1)
-                        throw ERROR_THROW_PLACE(111, line, col);
-
-                    quote_symbol = c;
-                    buffer[buf_idx++] = c;
-                    col++;
-                    continue;
-                }
-
-                if (isspace((unsigned char)c) || c == ';' || c == ',' || c == '(' || c == ')' ||
-                    c == '{' || c == '}' || c == '[' || c == ']' || c == ':' || c == '!' ||
-                    c == '+' || c == '-' || c == '*' || c == '/' || c == '=' || c == '\0')
-                {
-                    if (buf_idx > 0)
-                    {
-                        processBuffer(buf_idx);
-                        buf_idx = 0;
-                    }
-
-                    if (c == '\0') break;
-
-                    if (!isspace((unsigned char)c))
-                    {
-                        LEXTABLE::Entry lextable_entry;
-                        lextable_entry.str_number = line;
-                        lextable_entry.indexIT = LEXTABLE_IDENTIFICATORTABLE_NULLIDX;
-
-                        switch (c)
-                        {
-                        case ';': COPY(LEX_SEMICOLON); break;
-                        case ',': COPY(LEX_COMMA); break;
-                        case '{': COPY(LEX_LEFT_FIGURE_BRACKET); break;
-                        case '}': COPY(LEX_RIGHT_FIGURE_BRACKET); break;
-                        case '(': COPY(LEX_LEFT_BRACKET); break;
-                        case ')': COPY(LEX_RIGHT_BRACKET); break;
-                        case '[': COPY(LEX_LEFT_SQUARE_BRACKET); break;
-                        case ']': COPY(LEX_RIGHT_SQUARE_BRACKET); break;
-                        case ':': COPY(LEX_DOUBLEPOINT); break;
-                        case '!': COPY(LEX_EXCLAMATORY); break;
-                        case '+': COPY(LEX_PLUS); break;
-                        case '-': COPY(LEX_MINUS); break;
-                        case '*': COPY(LEX_STAR); break;
-                        case '/': COPY(LEX_DIRSLASH); break;
-                        case '=': COPY(LEX_EQUAL); break;
-                        }
-                        LEXTABLE::Add(lexer.lextable, lextable_entry);
-                    }
-                }
-                else
-                {
-                    if (buf_idx >= (int)sizeof(buffer) - 1)
-                        throw ERROR_THROW_PLACE(111, line, col);
-
-                    buffer[buf_idx++] = c;
-                }
                 col++;
+                continue;
             }
 
-            return lexer;
+            if (c == '\n')
+            {
+                if (buf_idx > 0)
+                {
+                    processBuffer(buf_idx);
+                    buf_idx = 0;
+                }
+                line++;
+                col = 1;
+                continue;
+            }
+
+            if (c == '"' || c == '\'')
+            {
+                if (buf_idx >= (int)sizeof(buffer) - 1)
+                    throw ERROR_THROW_PLACE(114, line, col);
+
+                quote_symbol = c;
+                buffer[buf_idx++] = c;
+                col++;
+                continue;
+            }
+
+            if (isspace((unsigned char)c) || c == ';' || c == ',' || c == '(' || c == ')' ||
+                c == '{' || c == '}' || c == '[' || c == ']' || c == ':' ||
+                c == '!' || c == '+' || c == '-' || c == '*' || c == '/' ||
+                c == '=' || c == '<' || c == '>' || c == '^' || c == '\0')
+            {
+                if (buf_idx > 0)
+                {
+                    processBuffer(buf_idx);
+                    buf_idx = 0;
+                }
+
+                if (c == '\0') break;
+
+                if (!isspace((unsigned char)c))
+                {
+                    LEXTABLE::Entry lextable_entry = {};
+                    lextable_entry.str_number = line;
+                    lextable_entry.indexIT = LEXTABLE_IDENTIFICATORTABLE_NULLIDX;
+
+                    switch (c)
+                    {
+                    case ';': COPY(LEX_SEMICOLON); break;
+                    case ',': COPY(LEX_COMMA); break;
+                    case '{': COPY(LEX_LEFT_FIGURE_BRACKET); break;
+                    case '}': COPY(LEX_RIGHT_FIGURE_BRACKET); break;
+                    case '(': COPY(LEX_LEFT_BRACKET);
+                        if (lexer.lextable.current_size > 0 &&
+                            strncmp(lexer.lextable.table[lexer.lextable.current_size - 1].lexema, LEX_PROCEDURE, 4) == 0)
+                            is_param = true;
+                        break;
+                    case ')': COPY(LEX_RIGHT_BRACKET); is_param = false; break;
+                    case '[': COPY(LEX_LEFT_SQUARE_BRACKET); break;
+                    case ']': COPY(LEX_RIGHT_SQUARE_BRACKET); break;
+                    case ':': COPY(LEX_DOUBLEPOINT); break;
+
+                    case '!':
+                        if (in.text[i + 1] == '=') {
+                            i++;
+                            COPY(LEX_NOTEQUAL);
+                        }
+                        else {
+                            COPY(LEX_EXCLAMATORY);
+                        }
+                        break;
+
+                    case '=':
+                        if (in.text[i + 1] == '=') {
+                            i++;
+                            COPY(LEX_EQUAL_EQUAL);
+                        }
+                        else {
+                            COPY(LEX_EQUAL);
+                        }
+                        break;
+
+                    case '<':
+                        if (in.text[i + 1] == '=') {
+                            i++;
+                            COPY(LEX_LESSEQ);
+                        }
+                        else {
+                            COPY(LEX_LESS);
+                        }
+                        break;
+
+                    case '>':
+                        if (in.text[i + 1] == '=') {
+                            i++;
+                            COPY(LEX_GREATEREQ);
+                        }
+                        else {
+                            COPY(LEX_GREATER);
+                        }
+                        break;
+
+                    case '^':
+                        if (in.text[i + 1] == '2') {
+                            i++;
+                            COPY(LEX_CUBE);
+                        }
+                        else throw ERROR_THROW_PLACE(113, line, col);
+                        break;
+
+                    case '+': COPY(LEX_PLUS); break;
+                    case '-': COPY(LEX_MINUS); break;
+                    case '*': COPY(LEX_STAR); break;
+                    case '/': COPY(LEX_DIRSLASH); break;
+                    }
+                    LEXTABLE::Add(lexer.lextable, lextable_entry);
+                }
+            }
+            else
+            {
+                if (buf_idx >= (int)sizeof(buffer) - 1)
+                    throw ERROR_THROW_PLACE(114, line, col);
+
+                buffer[buf_idx++] = c;
+            }
+            col++;
+        }
+
+        if (quote_symbol != '\0')
+
+            throw ERROR_THROW_PLACE(115, line, col);
+
+        return lexer;
     }
-	
+
     void PrintLexTable(LOG::Log log, LEXTABLE::LexTable lextable)
     {
         if (!log.stream) return;

@@ -9,6 +9,8 @@ namespace LOG
 		log.stream = new std::ofstream(LogFile, std::ios::binary);
 
 		if (!log.stream->is_open()) {
+			delete log.stream;
+			log.stream = nullptr;
 			throw ERROR_THROW(112);
 		}
 

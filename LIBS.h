@@ -8,6 +8,13 @@
 #include <ctime>
 #include <cstdint>
 #include <string>
+#include <stack>
+#include <vector>
+#include <cstdlib>
+#include <cctype>
+#include <cfloat>
+#include <climits>
+#include <clocale>
 
 #include "ERRORS.h"
 #include "IN.h"

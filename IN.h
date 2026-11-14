@@ -1,11 +1,11 @@
 #pragma once
-#define IN_MAX_LENGTH_TEXT 1024*1024																																					// максимальный размер исходного кода = 1MB
+#define IN_MAX_LENGTH_TEXT (1024*1024)																																					// максимальный размер исходного кода = 1MB
 #define IN_CODE_ENDL '\n'
 
-namespace IN 
+namespace IN
 {
 	struct In {
-		enum{
+		enum {
 			T = 1024,																																								//Символ можно использовать
 			F = 2048,																																								//Символ заблокирован
 			I = 4096																																								//Символ игнорируется
@@ -20,7 +20,7 @@ namespace IN
 }
 #define IN_CODE_TABLE { \
 	/* 00:NUL    01:STX    02:SOT    03:ETX    04:EOT    05:ENQ    06:ACK    07:BEL    08:BS     09:HT     0A:LF     0B:VT     0C:FF     0D:CR     0E:SO     0F:SI  */\
-	IN::In::T,IN::In::T,IN::In::T,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::T,IN::In::T,IN::In::T,IN::In::F,IN::In::F,IN::In::T,IN::In::F,IN::In::F,\
+	IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::T,IN::In::T,IN::In::F,IN::In::F,IN::In::T,IN::In::F,IN::In::F,\
 	/* 10:DLE    11:DC1    12:DC2    13:DC3    14:DC4    15:NAK    16:SYN    17:ETB    18:CAN    19:EM     1A:SUB    1B:ESC    1C:FS     1D:GS     1E:RS     1F:US  */\
 	IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,\
 	/* 20:SP     21:!      22:"      23:#      24:$      25:%      26:&      27:'      28:(      29:)      2A:*      2B:+      2C:,      2D:-      2E:.      2F:/   */\
@@ -40,7 +40,7 @@ namespace IN
 	/* 90:џ      91:‘      92:’      93:“      94:”      95:•      96:–      97:—      98:       99:™      9A:љ      9B:›      9C:њ      9D:ќ      9E:ћ      9F:џ   */\
 	IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::T,IN::In::T,IN::In::T,IN::In::F,IN::In::F,IN::In::F,IN::In::T,IN::In::F,IN::In::F,IN::In::F,IN::In::F,\
 	/* A0:NBSP   A1:Ў      A2:ў      A3:Ј      A4:¤      A5:Ґ      A6:¦      A7:§      A8:Ё      A9:©      AA:Є      AB:«      AC:¬      AD:-      AE:®      AF:І   */\
-	IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::T,IN::In::F,IN::In::F,\
+	IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::T,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::T,IN::In::F,IN::In::F,\
 	/* B0:°      B1:±      B2:І      B3:і      B4:ґ      B5:µ      B6:¶      B7:·      B8:ё      B9:№      BA:є      BB:»      BC:ј      BD:Ѕ      BE:ѕ      BF:ї   */\
 	IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::T,IN::In::T,IN::In::T,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,IN::In::F,\
 	/* C0:А      C1:Б      C2:В      C3:Г      C4:Д      C5:Е      C6:Ж      C7:З      C8:И      C9:Й      CA:К      CB:Л      CC:М      CD:Н      CE:О      CF:П   */\
