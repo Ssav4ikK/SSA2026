@@ -1,27 +1,25 @@
 #pragma once
 #include "LIBS.h"
-#include "GRB.h"
-#include <deque>
 
 #define MAX_DIAGNOSTIC_MESSAGES 3
 #define DIAGNOSTIC_MESSAGE_SIZE 1024
 #define MAX_PARSER_STEPS 5000000
 
-typedef std::stack<grbalphabet> ParseStack;
+typedef std::stack<grbalphabet> mfststack;
 
 namespace MFST
 {
-    struct ParserSnapshot
+    struct MfstState
     {
-        short tape_position;
-        short rule_index;
-        short chain_index;
-        std::size_t derivation_step_count;
-        ParseStack parse_stack;
+        short lenta_position;
+        short current_rule_number;
+        short current_chain_number;
 
-        ParserSnapshot();
-        ParserSnapshot(short tape_position, ParseStack parse_stack, short rule_index,
-            short chain_index, std::size_t derivation_step_count = 0);
+        std::size_t step_count;
+        mfststack stack;
+
+        MfstState();
+        MfstState(short _lenta_position, mfststack _stack, short _current_rule_number, short _current_chain_number, std::size_t _step_count = 0);
     };
 
     struct Mfst
@@ -38,44 +36,46 @@ namespace MFST
             SURPRISE
         };
 
-        struct ParserDiagnostic
+        struct MfstDiagnostics
         {
-            short tape_position;
+            short lenta_position;
             RC_STEP step_result;
-            short rule_index;
-            short chain_index;
+            short rule_number;
+            short rule_chain_number;
 
-            ParserDiagnostic();
-            ParserDiagnostic(short tape_position, RC_STEP step_result,
-                short rule_index, short chain_index);
+            MfstDiagnostics();
+            MfstDiagnostics(short _lenta_position, RC_STEP _step_result, short _rule_number, short rule_chain_number);
         } diagnostics[MAX_DIAGNOSTIC_MESSAGES];
 
-        grbalphabet* input_tape;
-        short tape_position;
-        short rule_index;
-        short chain_index;
-        short tape_size;
+        grbalphabet* lex_lenta;
+        short lenta_position;
+        short current_rule_number;
+        short current_chain_number;
+        short lenta_size;
+
         GRB::Greibach grammar;
         LEXER::Lexer lexer;
-        ParseStack parse_stack;
-        std::stack<ParserSnapshot> saved_states;
+        mfststack stack;
+        std::stack<MfstState> saved_states;
 
-        struct DerivationStep
+        struct OutStep
         {
             short rule_index;
             short chain_index;
         };
 
-        struct ParseTreeNode
+        struct TreeNode
         {
             grbalphabet grammar_symbol;
             std::string label;
-            std::vector<int> child_indices;
+            std::vector<int> child;
+
+            int token_index = -1;
         };
 
-        std::vector<DerivationStep> derivation_steps;
-        std::vector<ParseTreeNode> parse_tree;
-        LOG::Log* trace_log;
+        std::vector<OutStep> out_steps;
+        std::vector<TreeNode> tree;
+        LOG::Log* log;
 
         int step_count;
 
@@ -97,13 +97,17 @@ namespace MFST
 
         RC_STEP step();
         bool start();
-        bool saveDiagnostic(RC_STEP step_result);
+        bool saveDiagnostic(RC_STEP _step_result);
 
-        void setTraceLog(LOG::Log& log) { trace_log = &log; }
+        void setTraceLog(LOG::Log& _log) {log = &_log; }
         void writeTraceHeader();
         void writeTraceLine(const char* action_text);
 
         void buildParseTree();
         void writeParseTree(LOG::Log& log);
+        bool writeParseTreeToFile(const wchar_t* file_name);
+
+
+        const TreeNode& GetNode(const MFST::Mfst& parser, int node_index);
     };
 }

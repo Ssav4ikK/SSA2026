@@ -59,6 +59,7 @@ namespace FST
 
 	// ARRAY
 	bool isArray(char* str);
+	bool isVoid(char* str);
 
 	// PROCEDURES
 	bool isProcedure(char* str);
@@ -98,6 +99,7 @@ namespace FST
 	// IDENTIFICATORS, LITERALS
 	bool isIdentifier(char* str);
 	bool isIntegerLiteral(char* str);
+	bool isOctalLiteral(char* str);
 	bool isFloatLiteral(char* str);
 	bool isBooleanLiteral(char* str);
 	bool isSymbolLiteral(char* str);

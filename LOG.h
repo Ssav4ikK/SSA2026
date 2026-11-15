@@ -19,5 +19,4 @@ namespace LOG
 	void WriteIn(Log& log, IN::In in);
 	void WriteError(Log& log, ERROR::Error error);
 	void Close(Log& log);
-
 }

@@ -260,6 +260,16 @@ namespace FST
 		return execute(fst);
 	}
 
+	bool isVoid(char* str) {
+		Fst fst(str, 5,
+			Node(1, Relation('v', 1)),
+			Node(1, Relation('o', 2)),
+			Node(1, Relation('i', 3)),
+			Node(1, Relation('d', 4)),
+			Node());
+		return execute(fst);
+	}
+
 	// PROCEDURES
 
 	bool isProcedure(char* str) {
@@ -495,6 +505,34 @@ namespace FST
 		return true;
 	}
 
+	bool isOctalLiteral(char* str) {
+		Fst fst(str, 4,
+			Node(1, Relation('0', 1)),
+			Node(12,
+				Relation('o', 2), Relation('O', 2),
+				Relation('0', 3), Relation('1', 3),
+				Relation('2', 3), Relation('3', 3),
+				Relation('4', 3), Relation('5', 3),
+				Relation('6', 3), Relation('7', 3),
+				Relation('8', 3), Relation('9', 3)
+			),
+			Node(10,
+				Relation('0', 3), Relation('1', 3),
+				Relation('2', 3), Relation('3', 3),
+				Relation('4', 3), Relation('5', 3),
+				Relation('6', 3), Relation('7', 3),
+				Relation('8', 3), Relation('9', 3)
+			),
+			Node(10,
+				Relation('0', 3), Relation('1', 3),
+				Relation('2', 3), Relation('3', 3),
+				Relation('4', 3), Relation('5', 3),
+				Relation('6', 3), Relation('7', 3),
+				Relation('8', 3), Relation('9', 3)
+			));
+		return execute(fst, 2) || execute(fst, 3);
+	}
+
 	bool isIntegerLiteral(char* str) {
 		Fst fst(str, 2,
 			Node(10,
@@ -657,9 +695,12 @@ namespace FST
 	}
 
 	bool isStringLiteral(char* str) {
+		if (str == nullptr) return false;
+		if (isFormatedStringLiteral(str)) return false;
+
 		Fst fst(str, 3,
 			Node(1, Relation('\"', 1)),
-			Node(157,
+			Node(161,
 				Relation('A', 1), Relation('a', 1),
 				Relation('B', 1), Relation('b', 1),
 				Relation('C', 1), Relation('c', 1),
@@ -742,7 +783,9 @@ namespace FST
 				Relation('/', 1), Relation('\\', 2),
 				Relation('~', 1), Relation('`', 1),
 				Relation('\'', 1),
-				Relation('\"', 2)
+				Relation('\"', 2),
+				Relation('\n', 1), Relation('\t', 1),
+				Relation('\r', 1), Relation('}', 1)
 			),
 			Node(5,
 				Relation('\"', 1),
@@ -805,6 +848,7 @@ namespace FST
 
 		if (isNumber(str))		return LEX_NUMBER;
 		if (isHelp(str))		return LEX_HELP;
+		if (isVoid(str))		return LEX_VOID;
 
 		if (isIf(str))			return LEX_IF;
 		if (isElse(str))		return LEX_ELSE;
@@ -828,6 +872,7 @@ namespace FST
 		if (isDefault(str))		return LEX_DEFAULT;
 		if (isBreak(str))		return LEX_BREAK;
 
+		if (isOctalLiteral(str))			return LEX_LITERAL;
 		if (isIntegerLiteral(str))			return LEX_LITERAL;
 		if (isFloatLiteral(str))			return LEX_LITERAL;
 		if (isBooleanLiteral(str))			return LEX_LITERAL;

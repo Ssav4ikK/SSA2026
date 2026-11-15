@@ -7,7 +7,7 @@ namespace GRB
 {
 	struct Rule
 	{
-		grbalphabet not_terminal;
+		grbalphabet not_terminal;					
 		int errorID;
 		short count;
 

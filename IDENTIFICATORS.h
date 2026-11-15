@@ -16,23 +16,23 @@ namespace IDTABLE
 {
 	enum ID_DATA_TYPE
 	{
-		INT8 = 1,
-		INT16 = 2,
-		INT32 = 3,
-		INT64 = 4,
+		INT8,
+		INT16,
+		INT32,
+		INT64,
 
-		FLOAT32 = 11,
-		FLOAT64 = 12,
+		FLOAT32,
+		FLOAT64,
 
-		SYMBOL = 21,
-		STRING = 22,
-		FSTRING = 23,
+		SYMBOL,
+		STRING,
+		FSTRING,
 
-		BOOLEAN = 0,
+		BOOLEAN,
 
-		NUMBER = 99,
-		HELP = 100
-		
+		NUMBER,
+		HELP,
+		VOID,
 	};
 
 	enum ID_TYPE

@@ -2,83 +2,114 @@
 
 int wmain(int argc, wchar_t* argv[])
 {
-	setlocale(LC_ALL, "RU");
-	LOG::Log log = LOG::INITLOG;
+    setlocale(LC_ALL, "RU");
 
-	IN::In in = {};
-	LEXER::Lexer lex = {};
+    LOG::Log log = LOG::INITLOG;
+    IN::In in = {};
+    LEXER::Lexer lex = {};
 
-	try {
-		PARMS::Parm param = PARMS::getparm(argc, argv);
-		log = LOG::GetLog(param.log);
+    try {
+        PARMS::Parm param = PARMS::getparm(argc, argv);
+        log = LOG::GetLog(param.log);
 
-		LOG::WriteLog(log);
-		LOG::WriteParm(log, param);
+        LOG::WriteLog(log);
+        LOG::WriteParm(log, param);
 
-		in = IN::getIn(param.in);
-		LOG::WriteIn(log, in);
+        in = IN::getIn(param.in);
+        LOG::WriteIn(log, in);
 
-		lex = LEXER::Analyze(in);
-		LEXER::PrintLexTable(log, lex.lextable);
-		LEXER::PrintIdTable(log, lex.idtable);
+        lex = LEXER::Analyze(in);
+        LEXER::PrintLexTable(log, lex.lextable);
+        LEXER::PrintIdTable(log, lex.idtable);
 
-		std::ofstream OutFile(param.out, std::ios::binary);
-		if (OutFile.is_open())
-		{
-			OutFile.write(in.text, in.size);
-			OutFile.close();
-		}
+        std::cout << "Lexical analysis completed." << std::endl;
+        std::cout << "Syntax analysis started." << std::endl;
 
-		std::cout << "Lexical analysis completed." << std::endl;
-		std::cout << "Syntax analysis started." << std::endl;
+        GRB::Greibach grammar = GRB::GetGreibach();
+        MFST::Mfst parser(lex, grammar);
 
-		GRB::Greibach grammar = GRB::GetGreibach();
-		MFST::Mfst parser(lex, grammar);
+        LOG::WriteLine(log, "\r\nSYNTAX ANALYSIS", "");
+        parser.setTraceLog(log);
+        parser.writeTraceHeader();
+        bool is_valid = parser.start();
 
-		LOG::WriteLine(log, "\r\nSYNTAX ANALYSIS", "");
-		parser.setTraceLog(log);
-		parser.writeTraceHeader();
-		bool is_valid = parser.start();
-		if (is_valid)
-		{
-			LOG::WriteLine(log, "Syntax analysis completed without errors.", "");
-			parser.writeParseTree(log);
-			std::cout << "\nSyntax analysis completed without errors." << std::endl;
-		}
-		else
-		{
-			LOG::WriteLine(log, "Syntax errors detected:", "");
-			std::cout << "\nSyntax errors detected:" << std::endl;
+        if (is_valid)
+        {
+            LOG::WriteLine(log, "Syntax analysis completed without errors.", "");
+            parser.writeParseTree(log);
+            parser.writeParseTreeToFile(param.mfst);
 
-			char buffer[DIAGNOSTIC_MESSAGE_SIZE];
-			for (short i = 0; i < MAX_DIAGNOSTIC_MESSAGES; i++)
-			{
-				parser.getDiagnosticMessage(i, buffer);
-				if (buffer[0] != '\0')
-				{
-					LOG::WriteLine(log, buffer, "");
-					std::cout << "  " << buffer << std::endl;
-				}
-			}
-		}
-		std::cout << "Protocol was created." << std::endl;
-	}
-	catch (ERROR::Error error) {
-		std::cout << "Execution failed.\n";
-		LOG::WriteError(log, error);
-	}
-	catch (const std::exception& e) {
-		std::cout << "Execution failed: " << e.what() << std::endl;
-		if (log.stream) LOG::WriteLine(log, "Unexpected exception: ", e.what(), "");
-	}
-	catch (...) {
-		std::cout << "Execution failed: unknown error" << std::endl;
-	}
+            AST::AstBuilder astBuilder(parser);
+            AST::AstTree astTree = astBuilder.Build();
+            AST::WriteAst(log, astTree);
+            AST::WriteAstToFile(param.ast, astTree);
 
-	delete[] in.text;
-	LEXTABLE::Delete(lex.lextable);
-	IDTABLE::Delete(lex.idtable);
-	LOG::Close(log);
+            if (wcscmp(param.lang, LANG_JS) == 0)
+            {
+                JS::Js js = JS::GetJS(param.out);
+                JS::WriteJS(js);
+                JS::Close(js);
+            }
+            else if (wcscmp(param.lang, LANG_CPP) == 0)
+            {
+                CPP::Cpp cpp = CPP::GetCPP(param.out);
+                CPP::WriteCPP(cpp);
+                CPP::Close(cpp);
+            }
+            else if (wcscmp(param.lang, LANG_CS) == 0)
+            {
+                CS::Cs cs = CS::GetCS(param.out);
+                CS::WriteCS(cs);
+                CS::Close(cs);
+            }
+            else if (wcscmp(param.lang, LANG_ASM) == 0)
+            {
+                ASM::Asm asm_file = ASM::GetASM(param.out);
+                ASM::WriteASM(asm_file);
+                ASM::Close(asm_file);
+            }
 
-	return 0;
+            std::cout << "\nSyntax analysis completed without errors." << std::endl;
+            std::wcout << L"Generated file: " << param.out << std::endl;
+            std::wcout << L"MFST file: " << param.mfst << std::endl;
+            std::wcout << L"AST file: " << param.ast << std::endl;
+        }
+        else
+        {
+            LOG::WriteLine(log, "Syntax errors detected:", "");
+            std::cout << "\nSyntax errors detected:" << std::endl;
+
+            char buffer[DIAGNOSTIC_MESSAGE_SIZE];
+            for (short i = 0; i < MAX_DIAGNOSTIC_MESSAGES; ++i)
+            {
+                parser.getDiagnosticMessage(i, buffer);
+                if (buffer[0] != '\0')
+                {
+                    LOG::WriteLine(log, buffer, "");
+                    std::cout << "  " << buffer << std::endl;
+                }
+            }
+        }
+
+        std::cout << "Protocol was created." << std::endl;
+    }
+    catch (ERROR::Error error) {
+        std::cout << "Execution failed.\n";
+        LOG::WriteError(log, error);
+    }
+    catch (const std::exception& e) {
+        std::cout << "Execution failed: " << e.what() << std::endl;
+        if (log.stream)
+            LOG::WriteLine(log, "Unexpected exception: ", e.what(), "");
+    }
+    catch (...) {
+        std::cout << "Execution failed: unknown error" << std::endl;
+    }
+
+    delete[] in.text;
+    LEXTABLE::Delete(lex.lextable);
+    IDTABLE::Delete(lex.idtable);
+    LOG::Close(log);
+
+    return 0;
 }

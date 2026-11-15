@@ -15,6 +15,8 @@
 #include <cfloat>
 #include <climits>
 #include <clocale>
+#include <deque>
+#include <iomanip>
 
 #include "ERRORS.h"
 #include "IN.h"
@@ -26,3 +28,9 @@
 #include "LEXER.h"
 #include "GRB.h"
 #include "MFST.h"
+#include "AST.h"
+
+#include "JS.h"
+#include "CPP.h"
+#include "CS.h"
+#include "ASM.h"

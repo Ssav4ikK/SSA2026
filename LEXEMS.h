@@ -29,6 +29,8 @@
 
 #define LEX_SYMBOL		"symb"
 
+#define LEX_VOID		"void"
+
 //PROCEDURE/RETURN
 
 #define LEX_PROCEDURE	"proc"
@@ -76,12 +78,18 @@
 #define LEX_EQUAL		"=   "
 #define LEX_EXCLAMATORY "!   "
 #define LEX_CUBE		"^2  "
+
 #define LEX_LESS		"<   "
 #define LEX_GREATER		">   "
 #define LEX_LESSEQ		"<=  "
 #define LEX_GREATEREQ   ">=  "
 #define LEX_EQUAL_EQUAL "==  "
 #define LEX_NOTEQUAL	"!=  "
+
+#define LEX_PLUS_EQUAL		"+=  "
+#define LEX_MINUS_EQUAL		"-=  "
+#define LEX_STAR_EQUAL		"*=  "
+#define LEX_DIRSLAH_EQUAL	"/=  "
 
 //BASE FUNC
 
@@ -111,6 +119,7 @@ namespace LEXTABLE
 	{
 		char lexema[LEXEMA_FIXSIZE];
 		int str_number;
+		int col_number;
 		int indexIT;
 	};
 

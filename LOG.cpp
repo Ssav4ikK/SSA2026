@@ -85,6 +85,12 @@ namespace LOG
 
 		wcstombs_s(&converted, buffer, sizeof(buffer), parm.log, _TRUNCATE);
 		*(log.stream) << "LOG: " << buffer << "\r\n";
+
+		wcstombs_s(&converted, buffer, sizeof(buffer), parm.mfst, _TRUNCATE);
+		*(log.stream) << "MFST: " << buffer << "\r\n";
+
+		wcstombs_s(&converted, buffer, sizeof(buffer), parm.ast, _TRUNCATE);
+		*(log.stream) << "AST: " << buffer << "\r\n";
 	}
 
 	void WriteIn(Log& log, IN::In in) {

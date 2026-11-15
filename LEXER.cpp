@@ -1,9 +1,64 @@
 #include "LIBS.h"
+#include <cerrno>
+#include <charconv>
 
 #define COPY(lex)       strcpy_s(lextable_entry.lexema, LEXEMA_FIXSIZE, lex)
 #define COMPARE(lex)    strcmp(words, lex) == 0
 
 namespace LEXER {
+    static long long ParseIntegerLiteral(const char* text, int line, int col)
+    {
+        const char* digits = text;
+        int base = 10;
+
+        if (text[0] == '0' && (text[1] == 'o' || text[1] == 'O'))
+        {
+            base = 8;
+            digits = text + 2;
+
+            if (*digits == '\0')
+                throw ERROR_THROW_PLACE(118, line, col);
+        }
+        else if (text[0] == '0' && text[1] != '\0')
+        {
+            base = 8;
+            digits = text + 1;
+        }
+
+        for (const char* digit = digits; *digit != '\0'; ++digit)
+        {
+            if (*digit < '0' || *digit > '9')
+                throw ERROR_THROW_PLACE(117, line, col);
+
+            if (base == 8 && *digit > '7')
+                throw ERROR_THROW_PLACE(117, line, col);
+        }
+
+        errno = 0;
+        char* end = nullptr;
+        long long value = strtoll(digits, &end, base);
+
+        if (errno == ERANGE || end == digits || *end != '\0')
+            throw ERROR_THROW_PLACE(119, line, col);
+
+        return value;
+    }
+
+    static double ParseFloatLiteral(const char* text, int line, int col)
+    {
+        double value = 0.0;
+        const char* first = text;
+        const char* last = text + strlen(text);
+
+        std::from_chars_result result =
+            std::from_chars(first, last, value, std::chars_format::general);
+
+        if (result.ec != std::errc() || result.ptr != last)
+            throw ERROR_THROW_PLACE(123, line, col);
+
+        return value;
+    }
+
     Lexer Analyze(IN::In in) {
         Lexer lexer;
         lexer.lextable = LEXTABLE::Create(LEXTABLE_MAX_COUNT_OF_LINES);
@@ -21,6 +76,8 @@ namespace LEXER {
 
         char buffer[1024];
         int buf_idx = 0;
+        int buffer_start_line = line;
+        int buffer_start_column = col;
 
         auto processBuffer = [&](int length) {
             if (length <= 0) return;
@@ -29,7 +86,8 @@ namespace LEXER {
             local[length] = '\0';
 
             LEXTABLE::Entry lextable_entry = {};
-            lextable_entry.str_number = line;
+            lextable_entry.str_number = buffer_start_line;
+            lextable_entry.col_number = buffer_start_column;
             lextable_entry.indexIT = LEXTABLE_IDENTIFICATORTABLE_NULLIDX;
             strncpy_s(lextable_entry.lexema, LEXEMA_FIXSIZE, local, _TRUNCATE);
 
@@ -81,6 +139,10 @@ namespace LEXER {
             else if (COMPARE(LEX_HELP)) {
                 COPY(LEX_HELP);
                 current_type = IDTABLE::HELP;
+            }
+            else if (COMPARE(LEX_VOID)) {
+                COPY(LEX_VOID);
+                current_type = IDTABLE::VOID;
             }
 
 
@@ -234,7 +296,7 @@ namespace LEXER {
 
             //INT
 
-            else if (FST::isIntegerLiteral(local))
+            else if (FST::isIntegerLiteral(local) || FST::isOctalLiteral(local))
             {
                 COPY(LEX_LITERAL);
                 IDTABLE::Entry id_table_entry;
@@ -246,35 +308,36 @@ namespace LEXER {
 
                 id_table_entry.id_data_type = current_type;
 
+                long long value = ParseIntegerLiteral(local, line, col);
+
                 if (current_type == IDTABLE::INT8) {
-                    id_table_entry.id_value.var_int8 = (int8_t)atoi(local);
+                    id_table_entry.id_value.var_int8 = (int8_t)value;
                 }
                 else if (current_type == IDTABLE::INT16) {
-                    id_table_entry.id_value.var_int16 = (int16_t)atoi(local);
+                    id_table_entry.id_value.var_int16 = (int16_t)value;
                 }
                 else if (current_type == IDTABLE::INT32) {
-                    id_table_entry.id_value.var_int32 = (int32_t)atoi(local);
+                    id_table_entry.id_value.var_int32 = (int32_t)value;
                 }
                 else if (current_type == IDTABLE::INT64) {
-                    id_table_entry.id_value.var_int64 = std::stoll(local);
+                    id_table_entry.id_value.var_int64 = (int64_t)value;
                 }
                 else {
-                    long long val = std::stoll(local);
-                    if (val >= -128 && val <= 127) {
+                    if (value >= -128 && value <= 127) {
                         id_table_entry.id_data_type = IDTABLE::INT8;
-                        id_table_entry.id_value.var_int8 = (int8_t)val;
+                        id_table_entry.id_value.var_int8 = (int8_t)value;
                     }
-                    else if (val >= -32768 && val <= 32767) {
+                    else if (value >= -32768 && value <= 32767) {
                         id_table_entry.id_data_type = IDTABLE::INT16;
-                        id_table_entry.id_value.var_int16 = (int16_t)val;
+                        id_table_entry.id_value.var_int16 = (int16_t)value;
                     }
-                    else if (val >= -2147483648LL && val <= 2147483647LL) {
+                    else if (value >= -2147483648LL && value <= 2147483647LL) {
                         id_table_entry.id_data_type = IDTABLE::INT32;
-                        id_table_entry.id_value.var_int32 = (int32_t)val;
+                        id_table_entry.id_value.var_int32 = (int32_t)value;
                     }
                     else {
                         id_table_entry.id_data_type = IDTABLE::INT64;
-                        id_table_entry.id_value.var_int64 = (int64_t)val;
+                        id_table_entry.id_value.var_int64 = (int64_t)value;
                     }
                 }
 
@@ -298,21 +361,22 @@ namespace LEXER {
 
                 id_table_entry.id_data_type = current_type;
 
+                double value = ParseFloatLiteral(local, line, col);
+
                 if (current_type == IDTABLE::FLOAT32) {
-                    id_table_entry.id_value.var_float32 = (float)atof(local);
+                    id_table_entry.id_value.var_float32 = (float)value;
                 }
                 else if (current_type == IDTABLE::FLOAT64) {
-                    id_table_entry.id_value.var_float64 = atof(local);
+                    id_table_entry.id_value.var_float64 = value;
                 }
                 else {
-                    double val = atof(local);
-                    if (val >= -FLT_MAX && val <= FLT_MAX) {
+                    if (value >= -FLT_MAX && value <= FLT_MAX) {
                         id_table_entry.id_data_type = IDTABLE::FLOAT32;
-                        id_table_entry.id_value.var_float32 = (float)val;
+                        id_table_entry.id_value.var_float32 = (float)value;
                     }
                     else {
                         id_table_entry.id_data_type = IDTABLE::FLOAT64;
-                        id_table_entry.id_value.var_float64 = val;
+                        id_table_entry.id_value.var_float64 = value;
                     }
                 }
 
@@ -332,7 +396,7 @@ namespace LEXER {
                 _itoa_s(lexer.idtable.current_size, id_table_entry.id + 1, ID_MAX_CHARS - 1, 10);
 
                 id_table_entry.id_type = IDTABLE::L;
-                long long val = std::atof(local);
+                long long val = ParseIntegerLiteral(local, line, col);
 
                 if (val >= -128 && val <= 127) {
                     id_table_entry.id_data_type = IDTABLE::INT8;
@@ -467,7 +531,7 @@ namespace LEXER {
 
 
                 if (FST::isIntegerLiteral(local)) {
-                    long long val = std::stoll(local);
+                    long long val = ParseIntegerLiteral(local, line, col);
                     if (val >= -128 && val <= 127) {
                         id_table_entry.id_data_type = IDTABLE::INT8;
                         id_table_entry.id_value.var_int8 = (int8_t)val;
@@ -487,7 +551,7 @@ namespace LEXER {
                 }
 
                 else if (FST::isFloatLiteral(local)) {
-                    double val = std::stod(local);
+                    double val = ParseFloatLiteral(local, line, col);
 
                     if (val >= -FLT_MAX && val <= FLT_MAX) {
                         id_table_entry.id_data_type = IDTABLE::FLOAT32;
@@ -564,7 +628,16 @@ namespace LEXER {
                 else if (c == quote_symbol)
                     quote_symbol = '\0';
 
-                col++;
+                if (c == '\n')
+                {
+                    line++;
+                    col = 1;
+                }
+                else
+                {
+                    col++;
+                }
+
                 continue;
             }
 
@@ -584,6 +657,12 @@ namespace LEXER {
             {
                 if (buf_idx >= (int)sizeof(buffer) - 1)
                     throw ERROR_THROW_PLACE(114, line, col);
+
+                if (buf_idx == 0)
+                {
+                    buffer_start_line = line;
+                    buffer_start_column = col;
+                }
 
                 quote_symbol = c;
                 buffer[buf_idx++] = c;
@@ -608,6 +687,7 @@ namespace LEXER {
                 {
                     LEXTABLE::Entry lextable_entry = {};
                     lextable_entry.str_number = line;
+                    lextable_entry.col_number = col;
                     lextable_entry.indexIT = LEXTABLE_IDENTIFICATORTABLE_NULLIDX;
 
                     switch (c)
@@ -629,6 +709,7 @@ namespace LEXER {
                     case '!':
                         if (in.text[i + 1] == '=') {
                             i++;
+                            col++;
                             COPY(LEX_NOTEQUAL);
                         }
                         else {
@@ -639,6 +720,7 @@ namespace LEXER {
                     case '=':
                         if (in.text[i + 1] == '=') {
                             i++;
+                            col++;
                             COPY(LEX_EQUAL_EQUAL);
                         }
                         else {
@@ -649,6 +731,7 @@ namespace LEXER {
                     case '<':
                         if (in.text[i + 1] == '=') {
                             i++;
+                            col++;
                             COPY(LEX_LESSEQ);
                         }
                         else {
@@ -659,6 +742,7 @@ namespace LEXER {
                     case '>':
                         if (in.text[i + 1] == '=') {
                             i++;
+                            col++;
                             COPY(LEX_GREATEREQ);
                         }
                         else {
@@ -669,15 +753,55 @@ namespace LEXER {
                     case '^':
                         if (in.text[i + 1] == '2') {
                             i++;
+                            col++;
                             COPY(LEX_CUBE);
                         }
                         else throw ERROR_THROW_PLACE(113, line, col);
                         break;
 
-                    case '+': COPY(LEX_PLUS); break;
-                    case '-': COPY(LEX_MINUS); break;
-                    case '*': COPY(LEX_STAR); break;
-                    case '/': COPY(LEX_DIRSLASH); break;
+                    case '+':
+                        if (in.text[i + 1] == '=') {
+                            i++;
+                            col++;
+                            COPY(LEX_PLUS_EQUAL);
+                        }
+                        else {
+                            COPY(LEX_PLUS);
+                        }
+                        break;
+
+                    case '-':
+                        if (in.text[i + 1] == '=') {
+                            i++;
+                            col++;
+                            COPY(LEX_MINUS_EQUAL);
+                        }
+                        else {
+                            COPY(LEX_MINUS);
+                        }
+                        break;
+
+                    case '*':
+                        if (in.text[i + 1] == '=') {
+                            i++;
+                            col++;
+                            COPY(LEX_STAR_EQUAL);
+                        }
+                        else {
+                            COPY(LEX_STAR);
+                        }
+                        break;
+
+                    case '/':
+                        if (in.text[i + 1] == '=') {
+                            i++;
+                            col++;
+                            COPY(LEX_DIRSLAH_EQUAL);
+                        }
+                        else {
+                            COPY(LEX_DIRSLASH);
+                        }
+                        break;
                     }
                     LEXTABLE::Add(lexer.lextable, lextable_entry);
                 }
@@ -686,6 +810,12 @@ namespace LEXER {
             {
                 if (buf_idx >= (int)sizeof(buffer) - 1)
                     throw ERROR_THROW_PLACE(114, line, col);
+
+                if (buf_idx == 0)
+                {
+                    buffer_start_line = line;
+                    buffer_start_column = col;
+                }
 
                 buffer[buf_idx++] = c;
             }
