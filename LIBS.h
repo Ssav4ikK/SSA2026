@@ -29,6 +29,7 @@
 #include "GRB.h"
 #include "MFST.h"
 #include "AST.h"
+#include "SEMANTIC.h"
 
 #include "JS.h"
 #include "CPP.h"

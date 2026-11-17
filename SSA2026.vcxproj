@@ -154,6 +154,7 @@
     <ClCompile Include="LOG.cpp" />
     <ClCompile Include="MFST.cpp" />
     <ClCompile Include="PARM.cpp" />
+    <ClCompile Include="SEMANTIC.cpp" />
     <ClCompile Include="SSA2026.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -173,6 +174,7 @@
     <ClInclude Include="LOG.h" />
     <ClInclude Include="MFST.h" />
     <ClInclude Include="PARM.h" />
+    <ClInclude Include="SEMANTIC.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Debug\code.ssa" />
